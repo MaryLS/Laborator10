@@ -17,8 +17,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,14 +107,44 @@ public class GoogleMapsActivity extends AppCompatActivity implements GoogleApiCl
         public void onClick(View view) {
 
             // TODO exercise 6a
+
+            String latitudeContent = latitudeEditText.getText().toString();
+            String longitudeContent = longitudeEditText.getText().toString();
+            String nameContent = nameEditText.getText().toString();
+
             // check whether latitude, longitude and name are filled, otherwise long an error
+            if (latitudeContent == null || longitudeContent == null || nameContent == null) {
+                Toast.makeText(getApplicationContext(), "GPS Coordinates/name should be filled!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             // navigate to the requested position (latitude, longitude)
+            double latitudeValue = Double.parseDouble(latitudeContent);
+            double longitudeValue = Double.parseDouble(longitudeContent);
+            navigateToLocation(latitudeValue, longitudeValue);
+
             // create a MarkerOptions object with position, title and icon taken from the corresponding widgets
             // hint: for icon, use BitmapDescriptorFactory.defaultMarker() method
-            // add the MarkerOptions to the Google Map
-            // add the Place information to the places list
-            // notify the placesAdapter that the data set was changed
 
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(new LatLng(latitudeValue, latitudeValue))
+                    .title(nameContent)
+                    .icon(BitmapDescriptorFactory.defaultMarker(Utilities.getDefaultMarker(markerTypeSpinner.getSelectedItemPosition())));
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(Utilities.getDefaultMarker(markerTypeSpinner.getSelectedItemPosition())));
+
+            // add the MarkerOptions to the Google Map
+            googleMap.addMarker(markerOptions);
+
+            // add the Place information to the places list
+            places.add(new Place(
+                    latitudeValue,
+                    longitudeValue,
+                    nameContent,
+                    Utilities.getDefaultMarker(markerTypeSpinner.getSelectedItemPosition())
+            ));
+
+            // notify the placesAdapter that the data set was changed
+            placesAdapter.notifyDataSetChanged();
         }
     }
 
@@ -124,10 +156,19 @@ public class GoogleMapsActivity extends AppCompatActivity implements GoogleApiCl
 
             // TODO exercise 6b
             // check whether there are markers on the Google Map, otherwise log an error
-            // clear the Google Map
-            // clear the places List
-            // notify the placesAdapter that the data set was changed
+            if (places == null) {
+                Toast.makeText(getApplicationContext(), "There are no places available!", Toast.LENGTH_LONG).show();
+                return;
+            }
 
+            // clear the Google Map
+            googleMap.clear();
+
+            // clear the places List
+            places.clear();
+
+            // notify the placesAdapter that the data set was changed
+            placesAdapter.notifyDataSetChanged();
         }
     }
 
